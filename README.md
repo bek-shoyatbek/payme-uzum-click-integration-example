@@ -79,6 +79,8 @@ UZUM_PASSWORD
 UZUM_SERVICE_ID # UZUM tarafdan beriladi
 ```
 
+> [Uzum uchun qilingan API docs](https://documenter.getpostman.com/view/34214552/2sA3JFAPUT)
+
 ## Payme merchant API
 
 > Payme docs [Payme merchant API docs](https://developer.help.paycom.uz/metody-merchant-api/)
