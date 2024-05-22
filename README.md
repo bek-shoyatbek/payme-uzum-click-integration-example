@@ -19,8 +19,6 @@
     <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
   <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 ## Description
 
@@ -58,16 +56,22 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+# Payment tizimlari bilan ishlash uchun misol
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+> [!NOTE]
+> Kod da va logikada hato va kamchiliklar bo'lishi mumkun, zero hatosiz kod bu yozilmagan yoki o'chirib tashlagan koddir.
 
-## Stay in touch
+> [!TIP]
+> Uzum , Payme , Click merchant API lari Node.js Nest.js frameworki va Prisma ORM database management uchun ishlatilindi.
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+> [!WARNING]
+> To'lov tizimlari uchun ikkita parametr ishlatilindi. Bular planId va userId (user_id)
 
-## License
+> [!IMPORTANT]
+> To'lov tizimlari bilan integratsiya qilinyotganda beriladigan maxfiy kalitlarni hechkimga bermang va havfsiz joyda saqlang !
 
-Nest is [MIT licensed](LICENSE).
+## Contributing
+
+Agar biron hato yoki refactor qilmoqchi bo'lsangiz pull request ochsangiz hursand bo'laman...
+
+Please make sure to update tests as appropriate.
