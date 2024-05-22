@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  email        String?
+  phone        String?
+  password     String
+  fullname     String?
+  avatar       String?
+  refreshToken String?
+  role         UserRole       @default(user)
+  Transactions Transactions[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Transactions {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  provider    PaymentProvider
+  transId     String?           @unique
+  amount      Float
+  prepareId   Int?
+  performTime DateTime?
+  cancelTime  DateTime?
+  reason      Int?
+  state       Int?
+  status      TransactionStatus @default(PENDING)
+  user        Users             @relation(fields: [userId], references: [id])
+  userId      String            @db.ObjectId
+  plan        Plans             @relation(fields: [planId], references: [id])
+  planId      String            @db.ObjectId
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model Plans {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  titleUz          String
+  titleRu          String
+  availablePeriod  Int // ! In days
+  includeResources Boolean        @default(false)
+  includeSupport   Boolean        @default(false)
+  price            Float
+  courseId         String         @db.ObjectId
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  Transactions     Transactions[]
+}
+
+enum UserRole {
+  user
+  admin
+}
+
+enum TransactionStatus {
+  PENDING
+  CREATED
+  PAID
+  CANCELED
+}
+
+enum PaymentProvider {
+  payme
+  uzum
+  click
+}
