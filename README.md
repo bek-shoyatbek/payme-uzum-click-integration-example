@@ -1,36 +1,40 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+![Github image](https://myoctocat.com/assets/images/base-octocat.svg)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
+## Kerakli npm larni o'rnatish
 
 ```bash
 $ npm install
 ```
 
-## Running the app
+## Loyihani ishlatish
+
+### Loyiha uchun kerak bo'ladigan kalitlarni qo'shish
+
+```bash
+# .env.example file nomini .env ga o'zgartiring
+$ mv .env.example .env
+
+
+# .env filedagi kalitlarni o'zingizniki bilan o'zgartiring
+$ nano .env
+
+```
+
+> [!NOTE]
+> Tepadagi buyruqlar odatda Linux OS uchun siz ketmaketliklarni sichqoncha orqali bajarsangiz ham bo'ladi
+
+### Ma'lumotlar ombori bilan sinxronlash (Prisma va Mongodb)
+
+```bash
+# Schemalarni db ga ko'shirish
+$ npx prisma db push
+
+# Schemalarni serverda foydalanish
+$ npx prisma generate
+
+```
+
+### Nest serverni yoqish
 
 ```bash
 # development
@@ -41,19 +45,6 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
 
 # Payment tizimlari bilan ishlash uchun misol
@@ -70,8 +61,56 @@ $ npm run test:cov
 > [!IMPORTANT]
 > To'lov tizimlari bilan integratsiya qilinyotganda beriladigan maxfiy kalitlarni hechkimga bermang va havfsiz joyda saqlang !
 
+## Uzum
+
+> Bu misolda [Merchant API docs](https://developer.uzumbank.uz/merchant/)
+
+### Maxfiy kalitlar
+
+> [!NOTE]
+> Odatda siz tarafdan ushbu maxfiy kalitlar beriladi:
+
+```bash
+UZUM_USERNAME
+UZUM_PASSWORD
+```
+
+```bash
+UZUM_SERVICE_ID # UZUM tarafdan beriladi
+```
+
+## Payme merchant API
+
+> Payme docs [Payme merchant API docs](https://developer.help.paycom.uz/metody-merchant-api/)
+
+### Maxfiy kalitlar
+
+Payme , they are provided by payme
+
+```bash
+PAYME_LOGIN=Paycom
+PAYME_PASSWORD=sdfsdfsf@@sfdsfdsfdf
+PAYME_PASSWORD_TEST=dfdfdf@fddfdf&dfdfdd # test
+```
+
+> [!IMPORTANT]
+> Payme uchun qurgan API larinigizni oldin test qilishingingiz kerak bo'ladi. [Bu yerda](https://test.paycom.uz/instruction)
+
+## Click
+
+> [!NOTE]
+> Bu misolda [Click Shop-api dan foydalanildi](https://docs.click.uz/en/click-api-request/)
+
+they are all provided by Click
+
+```bash
+# Click-up credentials by Click
+CLICK_SERVICE_ID=33333
+CLICK_MERCHANT_ID=333
+CLICK_SECRET=33333
+CLICK_MERCHANT_USER_ID=3333
+```
+
 ## Contributing
 
 Agar biron hato yoki refactor qilmoqchi bo'lsangiz pull request ochsangiz hursand bo'laman...
-
-Please make sure to update tests as appropriate.
