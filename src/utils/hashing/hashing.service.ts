@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { createHash } from 'node:crypto';
+import { GenerateMd5HashParams } from 'src/click-up/interfaces/generate-prepare-hash.interface';
 
 @Injectable()
 export class HashingService {
@@ -15,6 +16,13 @@ export class HashingService {
     return await bcrypt.compare(password, hashedPassword);
   }
   md5(content: string, algo = 'md5') {
+    const hashFunc = createHash(algo);
+    hashFunc.update(content);
+    return hashFunc.digest('hex');
+  }
+  public generateMD5(params: GenerateMd5HashParams, algo = 'md5') {
+    const content = `${params.clickTransId}${params.serviceId}${params.secretKey}${params.merchantTransId}${params?.merchantPrepareId || ''}${params.amount}${params.action}${params.signTime}`;
+
     const hashFunc = createHash(algo);
     hashFunc.update(content);
     return hashFunc.digest('hex');

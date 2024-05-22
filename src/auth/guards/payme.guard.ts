@@ -12,6 +12,7 @@ export class PaymeBasicAuthGuard implements CanActivate {
     const response = context.switchToHttp().getResponse<Response>();
     const token = this.extractTokenFromHeader(request);
     const transId = request?.body?.id;
+
     if (!token) {
       response.status(200).send({
         id: transId,

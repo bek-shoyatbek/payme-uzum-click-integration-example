@@ -9,52 +9,53 @@ import { ClickError } from 'src/enums/Payment.enum';
 
 @Injectable()
 export class ClickService {
+  private readonly secretKey: string;
   constructor(
     private readonly prismaService: PrismaService,
     private readonly hashingService: HashingService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.secretKey = this.configService.get<string>('CLICK_SECRET');
+  }
 
   async handleMerchantTransactions(clickReqBody: ClickRequestDto) {
     const actionType = +clickReqBody.action;
+
     clickReqBody.amount = parseFloat(clickReqBody.amount + '');
 
-    if (isNaN(actionType)) {
-      return {
-        error: ClickError.ActionNotFound,
-        error_note: 'Invalid action',
-      };
-    }
-
-    if (actionType == TransactionActions.Prepare) {
-      return this.prepare(clickReqBody);
-    } else if (actionType == TransactionActions.Complete) {
-      return this.complete(clickReqBody);
-    } else {
-      return {
-        error: ClickError.ActionNotFound,
-        error_note: 'Invalid action',
-      };
+    switch (actionType) {
+      case TransactionActions.Prepare:
+        return this.prepare(clickReqBody);
+      case TransactionActions.Complete:
+        return this.complete(clickReqBody);
+      default:
+        return {
+          error: ClickError.ActionNotFound,
+          error_note: 'Invalid action',
+        };
     }
   }
 
   async prepare(clickReqBody: ClickRequestDto) {
-    const secretKey = this.configService.get<string>('CLICK_SECRET');
-
     const planId = clickReqBody.merchant_trans_id;
     const userId = clickReqBody.param2;
     const amount = clickReqBody.amount;
     const transId = clickReqBody.click_trans_id + ''; // ! in db transId is string
+    const signString = clickReqBody.sign_string;
 
-    const md5Hash = this.hashingService.md5(
-      `${clickReqBody.click_trans_id}${clickReqBody.service_id}${secretKey}${planId}${clickReqBody.amount}${clickReqBody.action}${clickReqBody.sign_time}`,
-    );
-    const isValidSignature = this.verifyMd5Hash(
-      clickReqBody.sign_string,
-      md5Hash,
-    );
+    const myMD5Params = {
+      clickTransId: transId,
+      serviceId: clickReqBody.service_id,
+      secretKey: this.secretKey,
+      merchantTransId: planId,
+      amount: amount,
+      action: clickReqBody.action,
+      signTime: clickReqBody.sign_time,
+    };
 
-    if (!isValidSignature) {
+    const myMD5Hash = this.hashingService.generateMD5(myMD5Params);
+
+    if (signString !== myMD5Hash) {
       return {
         error: ClickError.SignFailed,
         error_note: 'Invalid sign_string',
@@ -185,22 +186,27 @@ export class ClickService {
     const planId = clickReqBody.merchant_trans_id;
     const userId = clickReqBody.param2;
     const prepareId = clickReqBody.merchant_prepare_id;
-    const transId = clickReqBody.click_trans_id;
+    const transId = clickReqBody.click_trans_id + ''; // ! in db transId is string
     const serviceId = clickReqBody.service_id;
     const amount = clickReqBody.amount;
     const signTime = clickReqBody.sign_time;
     const error = clickReqBody.error;
+    const signString = clickReqBody.sign_string;
 
-    const secretKey = this.configService.get<string>('CLICK_SECRET');
-    const md5Hash = this.hashingService.md5(
-      `${transId}${serviceId}${secretKey}${planId}${prepareId}${amount}${clickReqBody.action}${signTime}`,
-    );
-    const isValidSignature = this.verifyMd5Hash(
-      clickReqBody.sign_string,
-      md5Hash,
-    );
+    const myMD5Params = {
+      clickTransId: transId,
+      serviceId,
+      secretKey: this.secretKey,
+      merchantTransId: planId,
+      merchantPrepareId: prepareId,
+      amount,
+      action: clickReqBody.action,
+      signTime,
+    };
 
-    if (!isValidSignature) {
+    const myMD5Hash = this.hashingService.generateMD5(myMD5Params);
+
+    if (signString !== myMD5Hash) {
       return {
         error: ClickError.SignFailed,
         error_note: 'Invalid sign_string',
@@ -331,9 +337,5 @@ export class ClickService {
 
   private checkObjectId(id: string) {
     return ObjectId.isValid(id);
-  }
-
-  private verifyMd5Hash(incomingSign: string, mySign: string) {
-    return incomingSign == mySign;
   }
 }
