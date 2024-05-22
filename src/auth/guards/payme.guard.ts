@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
+import { PaymeError } from 'src/payme/constants/payme-error';
 
 @Injectable()
 export class PaymeBasicAuthGuard implements CanActivate {
@@ -10,13 +11,11 @@ export class PaymeBasicAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const token = this.extractTokenFromHeader(request);
+    const transId = request?.body?.id;
     if (!token) {
       response.status(200).send({
-        id: request.body.id,
-        error: {
-          code: -32504,
-          message: 'Insufficient privileges to perform this operation',
-        },
+        id: transId,
+        error: PaymeError.InvalidAuthorization,
       });
       return;
     }
@@ -24,21 +23,13 @@ export class PaymeBasicAuthGuard implements CanActivate {
       const decoded = this.decodeToken(token);
       if (!decoded) {
         response.status(200).send({
-          id: request.body.id,
-          error: {
-            code: -32504,
-            message: 'Insufficient privileges to perform this operation',
-          },
+          id: transId,
+          error: PaymeError.InvalidAuthorization,
         });
         return;
       }
 
-      console.log('decoded', decoded);
       const [username, password] = decoded.split(':');
-
-      console.log('username', username, 'password', password);
-      console.log(this.configService.get<string>('PAYME_LOGIN'));
-      console.log(this.configService.get<string>('PAYME_PASSWORD_TEST'));
 
       const isValidUsername =
         this.configService.get<string>('PAYME_LOGIN') === username;
@@ -47,21 +38,15 @@ export class PaymeBasicAuthGuard implements CanActivate {
 
       if (!isValidUsername || !isValidPassword) {
         response.status(200).send({
-          id: request.body.id,
-          error: {
-            code: -32504,
-            message: 'Insufficient privileges to perform this operation',
-          },
+          id: transId,
+          error: PaymeError.InvalidAuthorization,
         });
         return;
       }
     } catch {
       response.status(200).send({
-        id: request.body.id,
-        error: {
-          code: -32504,
-          message: 'Insufficient privileges to perform this operation',
-        },
+        id: transId,
+        error: PaymeError.InvalidAuthorization,
       });
       return;
     }
