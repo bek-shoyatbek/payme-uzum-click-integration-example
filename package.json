@@ -75,6 +75,15 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.3"
   },
+  "keywords": [
+    "uzum",
+    "payme",
+    "click",
+    "payment",
+    "merchant",
+    "nestjs",
+    "nestjs-uzum-payme-click-merchant-api"
+  ],
   "jest": {
     "moduleFileExtensions": [
       "js",
