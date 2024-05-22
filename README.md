@@ -26,10 +26,10 @@ $ nano .env
 ### Ma'lumotlar ombori bilan sinxronlash (Prisma va Mongodb)
 
 ```bash
-# Schemalarni db ga ko'shirish
+# prisma schemalarni db ga ko'shirish
 $ npx prisma db push
 
-# Schemalarni serverda foydalanish
+# prisma schemalarni serverda foydalanish
 $ npx prisma generate
 
 ```
