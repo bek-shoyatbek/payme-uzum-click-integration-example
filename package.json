@@ -1,8 +1,8 @@
 {
   "name": "uzum-payme-click-merchant-api",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Payme , Uzum va Click shop api integratsiya misoli. Birinchi marta o'zim to'lov tizimlarini ulashda ancha ko'p vaqt sarflaganim va juda kam kod misollar topganim uchun shu repo ni ochishga qaror qildim.",
+  "author": "Bek Shoyatbek",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
