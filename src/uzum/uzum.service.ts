@@ -10,13 +10,16 @@ import { ReverseTransactionDto } from './dto/reverse-transaction.dto';
 import { CheckTransactionStatusDto } from './dto/check-status.dto';
 import { ObjectId } from 'mongodb';
 import { error } from 'console';
+import { TransactionService } from 'src/utils/service/transaction.service';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class UzumService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
-  ) {}
+    private readonly transactionService: TransactionService,
+  ) { }
   async check(checkTransactionDto: CheckTransactionDto) {
     const serviceId = checkTransactionDto.serviceId;
     const planId = checkTransactionDto.params.planId;
@@ -70,118 +73,120 @@ export class UzumService {
   }
 
   async create(createTransactionDto: CreateTransactionDto) {
-    const serviceId = createTransactionDto.serviceId;
-    const planId = createTransactionDto.params.planId;
-    const transId = createTransactionDto.transId;
-    const userId = createTransactionDto.params.userId;
+    return this.transactionService.executeTransaction(async (prismaTrx) => {
+      const serviceId = createTransactionDto.serviceId;
+      const planId = createTransactionDto.params.planId;
+      const transId = createTransactionDto.transId;
+      const userId = createTransactionDto.params.userId;
 
-    if (!this.checkServiceId(serviceId)) {
-      error('Invalid service id');
-      throw new BadRequestException({
+      if (!this.checkServiceId(serviceId)) {
+        error('Invalid service id');
+        throw new BadRequestException({
+          serviceId,
+          timestamp: new Date().valueOf(),
+          status: ResponseStatus.Failed,
+          errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
+        });
+      }
+
+      const transaction = await prismaTrx.transactions.findUnique({
+        where: {
+          transId,
+        },
+      });
+
+      if (transaction) {
+        error('Transaction already exists');
+        throw new BadRequestException({
+          serviceId,
+          timestamp: new Date().valueOf(),
+          status: ResponseStatus.Failed,
+          errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
+        });
+      }
+
+      if (!this.checkObjectId(planId)) {
+        error('Invalid account id');
+        throw new BadRequestException({
+          serviceId,
+          timestamp: new Date().valueOf(),
+          status: ResponseStatus.Failed,
+          errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
+        });
+      }
+
+      const plan = await prismaTrx.plans.findUnique({
+        where: {
+          id: planId,
+        },
+      });
+
+      if (!plan) {
+        error('Invalid plan id');
+        throw new BadRequestException({
+          serviceId,
+          timestamp: new Date().valueOf(),
+          status: ResponseStatus.Failed,
+          errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
+        });
+      }
+
+      const isValidAmount = plan.price === createTransactionDto.amount / 100; // ! incoming amount is in tiyn
+
+      if (!isValidAmount) {
+        error('Invalid amount');
+        throw new BadRequestException({
+          serviceId,
+          timestamp: new Date().valueOf(),
+          status: ResponseStatus.Failed,
+          errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
+        });
+      }
+
+      const user = await prismaTrx.users.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!user) {
+        error('Invalid user id');
+        throw new BadRequestException({
+          serviceId,
+          timestamp: new Date().valueOf(),
+          status: ResponseStatus.Failed,
+          errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
+        });
+      }
+
+      await prismaTrx.transactions.create({
+        data: {
+          transId,
+          amount: createTransactionDto.amount,
+          user: {
+            connect: {
+              id: userId,
+            },
+          },
+          status: 'PENDING',
+          provider: 'uzum',
+          plan: {
+            connect: {
+              id: planId,
+            },
+          },
+        },
+      });
+
+      return {
         serviceId,
         timestamp: new Date().valueOf(),
-        status: ResponseStatus.Failed,
-        errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
-      });
-    }
-
-    const transaction = await this.prismaService.transactions.findUnique({
-      where: {
-        transId,
-      },
-    });
-
-    if (transaction) {
-      error('Transaction already exists');
-      throw new BadRequestException({
-        serviceId,
-        timestamp: new Date().valueOf(),
-        status: ResponseStatus.Failed,
-        errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
-      });
-    }
-
-    if (!this.checkObjectId(planId)) {
-      error('Invalid account id');
-      throw new BadRequestException({
-        serviceId,
-        timestamp: new Date().valueOf(),
-        status: ResponseStatus.Failed,
-        errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
-      });
-    }
-
-    const plan = await this.prismaService.plans.findUnique({
-      where: {
-        id: planId,
-      },
-    });
-
-    if (!plan) {
-      error('Invalid plan id');
-      throw new BadRequestException({
-        serviceId,
-        timestamp: new Date().valueOf(),
-        status: ResponseStatus.Failed,
-        errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
-      });
-    }
-
-    const isValidAmount = plan.price === createTransactionDto.amount / 100; // ! incoming amount is in tiyn
-
-    if (!isValidAmount) {
-      error('Invalid amount');
-      throw new BadRequestException({
-        serviceId,
-        timestamp: new Date().valueOf(),
-        status: ResponseStatus.Failed,
-        errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
-      });
-    }
-
-    const user = await this.prismaService.users.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      error('Invalid user id');
-      throw new BadRequestException({
-        serviceId,
-        timestamp: new Date().valueOf(),
-        status: ResponseStatus.Failed,
-        errorCode: ErrorStatusCode.ErrorCheckingPaymentData,
-      });
-    }
-
-    await this.prismaService.transactions.create({
-      data: {
+        status: ResponseStatus.Created,
+        transTime: new Date().valueOf(),
         transId,
         amount: createTransactionDto.amount,
-        user: {
-          connect: {
-            id: userId,
-          },
-        },
-        status: 'PENDING',
-        provider: 'uzum',
-        plan: {
-          connect: {
-            id: planId,
-          },
-        },
-      },
+      };
     });
-
-    return {
-      serviceId,
-      timestamp: new Date().valueOf(),
-      status: ResponseStatus.Created,
-      transTime: new Date().valueOf(),
-      transId,
-      amount: createTransactionDto.amount,
-    };
   }
 
   async confirm(confirmTransactionDto: ConfirmTransactionDto) {
@@ -259,53 +264,55 @@ export class UzumService {
   }
 
   async reverse(reverseTransactionDto: ReverseTransactionDto) {
-    const serviceId = reverseTransactionDto.serviceId;
-    const transId = reverseTransactionDto.transId;
+    return this.transactionService.executeTransaction(async (prismaTrx) => {
+      const serviceId = reverseTransactionDto.serviceId;
+      const transId = reverseTransactionDto.transId;
 
-    if (!this.checkServiceId(serviceId)) {
-      error('Invalid service id');
-      throw new BadRequestException({
+      if (!this.checkServiceId(serviceId)) {
+        error('Invalid service id');
+        throw new BadRequestException({
+          serviceId,
+          transId,
+          status: ResponseStatus.Failed,
+          reverseTime: new Date().valueOf(),
+          errorCode: ErrorStatusCode.InvalidServiceId,
+        });
+      }
+
+      const transaction = await prismaTrx.transactions.findUnique({
+        where: {
+          transId,
+        },
+      });
+
+      if (!transaction) {
+        error('Invalid transaction id');
+        throw new BadRequestException({
+          serviceId,
+          transId,
+          status: ResponseStatus.Failed,
+          reverseTime: new Date().valueOf(),
+          errorCode: ErrorStatusCode.AdditionalPaymentPropertyNotFound,
+        });
+      }
+
+      await prismaTrx.transactions.update({
+        where: {
+          transId,
+        },
+        data: {
+          cancelTime: new Date(),
+          status: 'CANCELED',
+        },
+      });
+      return {
         serviceId,
         transId,
-        status: ResponseStatus.Failed,
+        status: ResponseStatus.Reversed,
         reverseTime: new Date().valueOf(),
-        errorCode: ErrorStatusCode.InvalidServiceId,
-      });
-    }
-
-    const transaction = await this.prismaService.transactions.findUnique({
-      where: {
-        transId,
-      },
-    });
-
-    if (!transaction) {
-      error('Invalid transaction id');
-      throw new BadRequestException({
-        serviceId,
-        transId,
-        status: ResponseStatus.Failed,
-        reverseTime: new Date().valueOf(),
-        errorCode: ErrorStatusCode.AdditionalPaymentPropertyNotFound,
-      });
-    }
-
-    await this.prismaService.transactions.update({
-      where: {
-        transId,
-      },
-      data: {
-        cancelTime: new Date(),
-        status: 'CANCELED',
-      },
-    });
-    return {
-      serviceId,
-      transId,
-      status: ResponseStatus.Reversed,
-      reverseTime: new Date().valueOf(),
-      amount: transaction.amount,
-    };
+        amount: transaction.amount,
+      };
+    })
   }
 
   async status(checkTransactionDto: CheckTransactionStatusDto) {
