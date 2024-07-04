@@ -68,7 +68,7 @@ export class ClickService {
 
     if (!isValidPlanId || !isValidUserId) {
       return {
-        error: ClickError.BadRequest,
+        error: ClickError.UserNotFound, // In click , error should be always -5
         error_note: 'Invalid planId or userId',
       };
     }
@@ -124,7 +124,7 @@ export class ClickService {
 
     if (!plan) {
       return {
-        error: ClickError.BadRequest,
+        error: ClickError.UserNotFound,
         error_note: 'Product not found',
       };
     }
@@ -219,7 +219,7 @@ export class ClickService {
 
     if (!isValidPlanId || !isValidUserId) {
       return {
-        error: ClickError.BadRequest,
+        error: ClickError.UserNotFound,
         error_note: 'Invalid planId or userId',
       };
     }
@@ -245,7 +245,7 @@ export class ClickService {
 
     if (!plan) {
       return {
-        error: ClickError.BadRequest,
+        error: ClickError.UserNotFound,
         error_note: 'Invalid planId',
       };
     }
