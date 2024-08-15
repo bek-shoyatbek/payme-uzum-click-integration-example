@@ -12,7 +12,7 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
-
+// Foydalanuvchilar saqlash uchun sxema
 model Users {
   id           String         @id @default(auto()) @map("_id") @db.ObjectId
   email        String?
@@ -27,6 +27,8 @@ model Users {
   updatedAt    DateTime       @updatedAt
 }
 
+// Bu asosiy sxemalardan biri va payme, click, and uzum servislari orqali qilinadigan ma'lumotlarni saqlash uchun. ! iloji bo'lsa PaymeTransactions, ClickTransactions va UzumTransactions sxemalariga bo'lib ishlatish tavsiya etiladi
+// keyin o'zingiz va boshqalar yahshiroq tushunishi uchun. Men bu test loyiha sxemani o'zgartirgandan keyin , test qilib bo'lmasligi uchun bo'lmadim , ishlaydigan versiyanida qoldi...
 model Transactions {
   id          String            @id @default(auto()) @map("_id") @db.ObjectId
   provider    PaymentProvider
@@ -46,6 +48,7 @@ model Transactions {
   updatedAt   DateTime          @updatedAt
 }
 
+// Misol mahsulot, siz o'zingizga hohlagan mahsulotga almashtirishingiz mumkun, kitob, kiyim, ovqat va boshqa narsalar...
 model Plans {
   id               String         @id @default(auto()) @map("_id") @db.ObjectId
   titleUz          String
@@ -54,11 +57,11 @@ model Plans {
   includeResources Boolean        @default(false)
   includeSupport   Boolean        @default(false)
   price            Float
-  courseId         String         @db.ObjectId
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   Transactions     Transactions[]
 }
+
 
 enum UserRole {
   user
